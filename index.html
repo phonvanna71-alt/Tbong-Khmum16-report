@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ប្រព័ន្ធគ្រប់គ្រង និងនាំចេញរបាយការណ៍ផែនការយុទ្ធសាស្ត្រ - ខេត្តត្បូងឃ្មុំ</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for Khmer -->
+    <link href="https://fonts.googleapis.com/css2?family=Hanuman:wght@300;400;700;900&family=Kantumruy+Pro:ital,wght@0,300;0,400;0,700;1,300&family=Moul&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Kantumruy Pro', 'Hanuman', sans-serif;
+        }
+        .khmer-moul {
+            font-family: 'Moul', cursive;
+        }
+        /* Custom print and layout style simulating A4 pages */
+        .preview-page {
+            width: 100%;
+            min-height: 297mm;
+            padding: 25mm 20mm;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            position: relative;
+        }
+        @media print {
+            .no-print { display: none; }
+            .preview-page {
+                box-shadow: none;
+                padding: 0;
+                margin: 0;
+                width: auto;
+                min-height: auto;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Header Navigation -->
+    <header class="bg-gradient-to-r from-blue-900 to-indigo-950 text-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-amber-400 p-2.5 rounded-lg text-blue-900 font-bold shadow-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="khmer-moul text-lg md:text-xl text-amber-300">ប្រព័ន្ធរៀបចំសៀវភៅរបាយការណ៍យុទ្ធសាស្ត្រ</h1>
+                    <p class="text-xs text-blue-200">ផែនការយុទ្ធសាស្ត្រអភិវឌ្ឍន៍ឃុំ-សង្កាត់ ខេត្តត្បូងឃ្មុំ ឆ្នាំ២០២៤</p>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="exportToWord()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2.5 rounded-lg transition duration-200 shadow-md flex items-center gap-2 text-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    ទាញយករបាយការណ៍ជា MS-Word (.doc)
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="flex-1 container mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left Sidebar: Controls & Live Editor -->
+        <aside class="lg:col-span-4 space-y-6 class no-print">
+            <!-- Selector Card -->
+            <div class="bg-white rounded-xl shadow-md p-5 border border-slate-200">
+                <h3 class="font-bold text-lg text-blue-900 border-b pb-2 mb-4 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                    </svg>
+                    កំណត់ទិន្នន័យវិភាគ និងតម្រង
+                </h3>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">ជ្រើសរើសស្រុក/ក្រុង សម្រាប់ផ្តោតលើការវិភាគ៖</label>
+                <select id="district-selector" onchange="updateDistrictFocus()" class="w-full bg-slate-50 border border-slate-300 text-slate-800 py-2.5 px-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
+                    <option value="all">-- ខេត្តត្បូងឃ្មុំទាំងមូល --</option>
+                    <option value="តំបែរ">ស្រុកតំបែរ</option>
+                    <option value="ក្រូចឆ្មារ">ស្រុកក្រូចឆ្មារ</option>
+                    <option value="មេមត់">ស្រុកមេមត់</option>
+                    <option value="អូររាំងឪ">ស្រុកអូររាំងឪ</option>
+                    <option value="ពញាក្រែក">ស្រុកពញាក្រែក</option>
+                    <option value="សួង">ក្រុងសួង</option>
+                    <option value="ត្បូងឃ្មុំ">ស្រុកត្បូងឃ្មុំ</option>
+                </select>
+                <p class="text-xs text-slate-500 mt-2">ទិន្នន័យស្ថិតិ និងក្រាហ្វិកវិភាគនៅលើទំព័រទាំងអស់នឹងធ្វើបច្ចុប្បន្នភាពស្របគ្នាភ្លាមៗ។</p>
+            </div>
+
+            <!-- Stakeholder Quotes Editor -->
+            <div class="bg-white rounded-xl shadow-md p-5 border border-slate-200">
+                <h3 class="font-bold text-lg text-blue-900 border-b pb-2 mb-4 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                    កែសម្រួលសម្រង់សម្តី / មតិយោបល់
+                </h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">សម្តីរបស់ថ្នាក់ដឹកនាំរដ្ឋបាល (ស្រុក/ខេត្ត)៖</label>
+                        <textarea id="quote-governor" oninput="syncQuotes()" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2 h-24 focus:outline-none focus:ring-2 focus:ring-blue-500">«ការអភិវឌ្ឍប្រកបដោយចីរភាព ត្រូវតែចាប់ផ្តើមពីការស្តាប់តម្រូវការមូលដ្ឋានរបស់ប្រជាពលរដ្ឋ និងការបែងចែកថវិកាឃុំ-សង្កាត់ឱ្យមានតម្លាភាព គណនេយ្យភាព ជាពិសេសការកសាងប្រព័ន្ធហេដ្ឋារចនាសម្ព័ន្ធរូបវន្ត និងសេវាសាធារណៈឱ្យកាន់តែកៀកនឹងផ្ទះពលរដ្ឋ។»</textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">សម្តីរបស់តំណាងគណៈកម្មាធិការទទួលបន្ទុកកិច្ចការនារី៖</label>
+                        <textarea id="quote-woman" oninput="syncQuotes()" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2 h-24 focus:outline-none focus:ring-2 focus:ring-blue-500">«នៅពេលដែលស្ត្រីត្រូវបានផ្តល់សិទ្ធិអំណាច និងមានតួនាទីសម្រេចចិត្តនៅក្នុងផែនការអភិវឌ្ឍន៍ឃុំ-សង្កាត់ យើងឃើញថាបញ្ហាអាហារូបត្ថម្ភ សុខភាពមាតា និងកុមារ និងបញ្ហាសហគមន៍ជាច្រើនត្រូវបានដោះស្រាយកាន់តែមានប្រសិទ្ធភាពខ្ពស់។»</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Technical Cleanup Logic Status Indicator -->
+            <div class="bg-gradient-to-br from-blue-900 to-indigo-900 text-white rounded-xl shadow-md p-5 border border-blue-800">
+                <h4 class="font-bold text-amber-300 mb-2 flex items-center gap-1.5 text-sm md:text-base">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    ប្រព័ន្ធការពារ និងលុបក្រាហ្វិកចាស់
+                </h4>
+                <p class="text-xs text-blue-200 leading-relaxed mb-3">
+                    រាល់ពេលផ្លាស់ប្តូរតម្រងស្រុក ប្រព័ន្ធនឹងដំណើរការ <strong>Clean-up logic</strong> ដើម្បី <code>destroy()</code> រាល់ instances របស់ Chart.js ចាស់ៗ រារាំងការជាន់គ្នានៃទិន្នន័យ និងធានាថាការដំណើរការមិនគាំង។
+                </p>
+                <div class="flex items-center gap-2 bg-blue-950 p-2.5 rounded-lg text-xs text-emerald-400 border border-blue-800">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    ស្វ័យប្រវត្តិកម្ម Clean-up ដំណើរការធម្មតា
+                </div>
+            </div>
+        </aside>
+
+        <!-- Right Side: Live Report Preview Panel (Simulating multi-page document) -->
+        <section class="lg:col-span-8 flex flex-col space-y-6">
+            
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex justify-between items-center no-print">
+                <span class="text-sm text-slate-500 font-semibold flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse"></span>
+                    ទិដ្ឋភាពសៀវភៅរបាយការណ៍បោះពុម្ព (A4 Multi-Page Layout Live Preview)
+                </span>
+                <span class="text-xs bg-blue-50 text-blue-800 px-3 py-1 rounded-full font-bold">
+                    ខេត្តត្បូងឃ្មុំ • ស្ថិតិឆ្នាំ ២០២៤
+                </span>
+            </div>
+
+            <!-- Page Container simulating physical book -->
+            <div class="space-y-8" id="report-view">
+                
+                <!-- ==================== PAGE 1: COVER PAGE ==================== -->
+                <div class="preview-page flex flex-col justify-between" id="page-cover">
+                    <!-- Top border and header design -->
+                    <div class="text-center">
+                        <p class="khmer-moul text-lg text-slate-900 mb-1 leading-relaxed">ព្រះរាជាណាចក្រកម្ពុជា</p>
+                        <p class="khmer-moul text-sm text-slate-800 tracking-wider">ជាតិ សាសនា ព្រះមហាក្សត្រ</p>
+                        <div class="flex justify-center my-3">
+                            <span class="text-slate-400 text-sm">🏆🏆🏆</span>
+                        </div>
+                        <p class="text-sm font-semibold text-slate-600 tracking-wide">រដ្ឋបាលខេត្តត្បូងឃ្មុំ</p>
+                    </div>
+
+                    <!-- Title Block -->
+                    <div class="text-center my-auto py-12">
+                        <div class="w-24 h-24 mx-auto mb-8 bg-blue-50 rounded-full flex items-center justify-center border border-blue-200 shadow-md">
+                            <!-- Cambodian Lotus / Book symbol representation -->
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-blue-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                            </svg>
+                        </div>
+                        <h2 class="khmer-moul text-xl md:text-2xl text-blue-950 mb-3 tracking-wide leading-relaxed">សៀវភៅរបាយការណ៍យុទ្ធសាស្ត្រ</h2>
+                        <h1 class="khmer-moul text-2xl md:text-3.5xl text-amber-600 leading-normal mb-4">ផែនការយុទ្ធសាស្ត្រអភិវឌ្ឍន៍ឃុំ-សង្កាត់</h1>
+                        <p class="text-lg font-bold text-slate-700">ខេត្តត្បូងឃ្មុំ ឆ្នាំ២០២៤</p>
+                        <div class="w-32 h-1 bg-amber-400 mx-auto mt-6"></div>
+                    </div>
+
+                    <!-- Bottom credits -->
+                    <div class="border-t border-slate-300 pt-6 text-center text-xs text-slate-600 space-y-1">
+                        <p class="font-bold text-slate-800">រៀបចំ និងចងក្រងដោយ៖ ក្រុមការងារគាំទ្របច្ចេកទេស និងផែនការថ្នាក់ខេត្ត</p>
+                        <p>ផ្អែកលើទិន្នន័យប្រមូលផ្តុំសូចនាករភូមិ-ឃុំ ឆ្នាំ២០២៤</p>
+                    </div>
+                </div>
+
+                <!-- ==================== PAGE 2: DEMOGRAPHICS AND DATA ANALYSIS ==================== -->
+                <div class="preview-page flex flex-col justify-between" id="page-demographics">
+                    <div>
+                        <!-- Header line -->
+                        <div class="flex justify-between items-center border-b pb-3 mb-6">
+                            <span class="text-xs text-slate-500 font-semibold uppercase">ផ្នែកទី១៖ វិភាគទិន្នន័យប្រជាសាស្ត្រសរុប</span>
+                            <span class="text-xs text-blue-800 font-bold">ទំព័រទី ២</span>
+                        </div>
+
+                        <div class="border-l-4 border-blue-900 pl-4 mb-4">
+                            <h2 class="khmer-moul text-lg text-blue-950">១. លក្ខណៈរួមអំពីចំនួនប្រជាសាស្ត្រ និងគ្រួសារសរុប</h2>
+                        </div>
+
+                        <!-- Data Analysis Narrative (Detailed & Long) -->
+                        <div class="text-slate-700 text-sm leading-relaxed mb-6 space-y-4">
+                            <p class="text-justify">
+                                ផ្អែកលើទិន្នន័យសរុបក្នុងភូមិដែលដកស្រង់ចេញពីសៀវភៅគ្រួសារឆ្នាំ២០២៤ ខេត្តត្បូងឃ្មុំមានចំនួនប្រជាជនរស់នៅសរុបចំនួន <strong><span id="txt-total-pop">870,087</span> នាក់</strong> ស្មើនឹង <strong><span id="txt-total-families">206,255</span> គ្រួសារ</strong>។ ប្រជាជនសរុបត្រូវបានបែងចែកជាប្រជាជនស្រីចំនួន <strong><span id="txt-total-female">439,972</span> នាក់</strong> និងប្រជាជនប្រុសចំនួន <strong><span id="txt-total-male">430,115</span> នាក់</strong> ដែលផលធៀបយេនឌ័រស្មើនឹងប្រមាណ ១០២.២៩ (ស្រីច្រើនជាងប្រុសក្នុងផលធៀបប្រុស ១០០នាក់)។
+                            </p>
+                            <p class="text-justify">
+                                តាមការវិភាគកម្រិតសូចនាករថ្នាក់ស្រុក-ក្រុង បានបង្ហាញឱ្យឃើញថា ស្រុកដែលមានដង់ស៊ីតេប្រជាជនរស់នៅខ្ពស់ជាងគេ និងមានសកម្មភាពសេដ្ឋកិច្ចមមាញឹកគឺ <strong>ស្រុកត្បូងឃ្មុំ</strong> (ប្រជាជនសរុប ២០៥,២៧២ នាក់) និង <strong>ស្រុកមេមត់</strong> (ប្រជាជនសរុប ១៦២,០៨៣ នាក់)។ ចំណែកឯតំបន់ដែលមានចំនួនប្រជាជនតិចជាងគេគឺ <strong>ក្រុងសួង</strong> ដែលជាទីប្រជុំជនរដ្ឋបាលកណ្តាល មានចំនួន ៤០,៧១៧ នាក់ប៉ុណ្ណោះ ប៉ុន្តែមានដង់ស៊ីតេគ្រួសារខ្ពស់ក្នុងមួយគីឡូម៉ែត្រការ៉េ។
+                            </p>
+                        </div>
+
+                        <!-- Charts Visual Container -->
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-6">
+                            <h4 class="text-xs font-bold text-slate-700 mb-3 flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                                ក្រាហ្វវិភាគទី១៖ ការប្រៀបធៀបចំនួនប្រជាជនតាមបណ្តាស្រុក-ក្រុង ក្នុងខេត្តត្បូងឃ្មុំ (២០២៤)
+                            </h4>
+                            <div class="relative h-60 w-full bg-white p-2 rounded-lg border border-slate-100 shadow-sm">
+                                <canvas id="chart-demographics"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Quote/Comment from Governor -->
+                        <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-lg my-4">
+                            <p class="italic text-slate-800 text-xs md:text-sm leading-relaxed" id="quote-gov-display">
+                                «ការអភិវឌ្ឍប្រកបដោយចីរភាព ត្រូវតែចាប់ផ្តើមពីការស្តាប់តម្រូវការមូលដ្ឋានរបស់ប្រជាពលរដ្ឋ និងការបែងចែកថវិកាឃុំ-សង្កាត់ឱ្យមានតម្លាភាព គណនេយ្យភាព ជាពិសេសការកសាងប្រព័ន្ធហេដ្ឋារចនាសម្ព័ន្ធរូបវន្ត និងសេវាសាធារណៈឱ្យកាន់តែកៀកនឹងផ្ទះពលរដ្ឋ។»
+                            </p>
+                            <div class="mt-2 text-xs font-bold text-slate-600 text-right">— តំណាងគណៈអភិបាលរដ្ឋបាលមូលដ្ឋាន ខេត្តត្បូងឃ្មុំ</div>
+                        </div>
+                    </div>
+
+                    <!-- Image / Stock Image SVG Placeholder -->
+                    <div class="border border-slate-200 rounded-lg overflow-hidden bg-slate-50 p-3 mt-auto">
+                        <div class="text-[10px] text-slate-500 text-center mb-1.5 font-semibold">រូបភាពទី១៖ សកម្មភាពក្រុមប្រឹក្សាឃុំប្រជុំពិគ្រោះយោបល់ និងប្រមូលទិន្នន័យជាមួយប្រជាសហគមន៍</div>
+                        <div class="mx-auto max-w-sm">
+                            <svg viewBox="0 0 400 130" class="w-full h-auto bg-blue-50 rounded border border-blue-100 shadow-inner">
+                                <rect width="100%" height="100%" fill="#f0f9ff"/>
+                                <!-- Village meeting representation -->
+                                <circle cx="200" cy="100" r="45" fill="#bae6fd" />
+                                <circle cx="200" cy="95" r="45" fill="#38bdf8" opacity="0.3"/>
+                                <!-- Table -->
+                                <ellipse cx="200" cy="115" rx="70" ry="15" fill="#1e3a8a" />
+                                <!-- People sitting -->
+                                <circle cx="150" cy="90" r="10" fill="#f59e0b" />
+                                <path d="M 140,115 C 140,102 160,102 160,115 Z" fill="#d97706" />
+                                <circle cx="250" cy="90" r="10" fill="#10b981" />
+                                <path d="M 240,115 C 240,102 260,102 260,115 Z" fill="#059669" />
+                                <circle cx="200" cy="85" r="11" fill="#ec4899" />
+                                <path d="M 188,115 C 188,98 212,98 212,115 Z" fill="#db2777" />
+                                <!-- Documents on desk -->
+                                <rect x="185" y="110" width="30" height="8" fill="#ffffff" rx="1" />
+                                <text x="200" y="45" font-family="'Kantumruy Pro', sans-serif" font-size="11" font-weight="bold" fill="#1e3a8a" text-anchor="middle">វេទិកាពិគ្រោះយោបល់ថ្នាក់ភូមិ-ឃុំ</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==================== PAGE 3: GENDER ANALYSIS AND WOMEN IN DECISION MAKING ==================== -->
+                <div class="preview-page flex flex-col justify-between" id="page-gender">
+                    <div>
+                        <!-- Header line -->
+                        <div class="flex justify-between items-center border-b pb-3 mb-6">
+                            <span class="text-xs text-slate-500 font-semibold uppercase">ផ្នែកទី២៖ សមភាពយេនឌ័រ និងស្រ្តីជាមេគ្រួសារ</span>
+                            <span class="text-xs text-blue-800 font-bold">ទំព័រទី ៣</span>
+                        </div>
+
+                        <div class="border-l-4 border-rose-500 pl-4 mb-4">
+                            <h2 class="khmer-moul text-lg text-blue-950">២. ការវិភាគលើសមភាពយេនឌ័រ និងគ្រួសារមានស្ត្រីជាមេដឹកនាំ</h2>
+                        </div>
+
+                        <!-- Detailed narrative -->
+                        <div class="text-slate-700 text-sm leading-relaxed mb-6 space-y-4">
+                            <p class="text-justify">
+                                សមភាពយេនឌ័រនៅតែជាចំណុចយុទ្ធសាស្ត្រអាទិភាពដ៏សំខាន់បំផុតមួយក្នុងការកសាងផែនការអភិវឌ្ឍន៍រយៈពេលប្រាំឆ្នាំ។ តាមការវិភាគលើទិន្នន័យជាក់ស្តែង ចំនួនគ្រួសារដែលមាន **ស្ត្រីជាមេគ្រួសារ** នៅក្នុងខេត្តត្បូងឃ្មុំមានចំនួនរហូតដល់ <strong><span id="txt-total-female-headed">30,208</span> គ្រួសារ</strong> ស្មើនឹងប្រមាណ ១៤.៦% នៃចំនួនគ្រួសារសរុប។ ស្រុកដែលមានស្ត្រីជាមេគ្រួសារច្រើនជាងគេគឺ ស្រុកត្បូងឃ្មុំ (៧,៥០៧ គ្រួសារ) បន្ទាប់មកគឺស្រុកពញាក្រែក (៥,៨៤២ គ្រួសារ)។
+                            </p>
+                            <p class="text-justify">
+                                បន្ថែមពីនេះ បើពិនិត្យមើលលើសមាសភាពស្ត្រីក្នុងវិស័យរដ្ឋបាល និងការសម្រេចចិត្ត ផ្អែកលើទិន្នន័យសូចនាករយេនឌ័រ៖ ចំនួនស្ត្រីជាសមាជិកក្រុមប្រឹក្សាក្រុង-ស្រុក មានចំនួន **២៥ នាក់** ក្នុងចំណោមសមាជិកសរុប ១៣៧ នាក់ (ស្មើនឹង ១៨.២៥%)។ រដ្ឋបាលខេត្តកំពុងជំរុញឱ្យមានការចូលរួមរបស់ស្ត្រីកាន់តែច្រើនក្នុងគណៈកម្មាធិការសម្របសម្រួលបច្ចេកទេស និងគណៈកម្មាធិការទទួលបន្ទុកកិច្ចការនារី និងកុមារឃុំ (គ.ក.ន.ក)។
+                            </p>
+                        </div>
+
+                        <!-- Gender line chart comparisons -->
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-6">
+                            <h4 class="text-xs font-bold text-slate-700 mb-3 flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                                ក្រាហ្វវិភាគទី២៖ អត្រាប្រៀបធៀបគ្រួសារសរុប និងគ្រួសារមានស្ត្រីជាមេគ្រួសារតាមស្រុក-ក្រុង
+                            </h4>
+                            <div class="relative h-60 w-full bg-white p-2 rounded-lg border border-slate-100 shadow-sm">
+                                <canvas id="chart-gender"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Women Quote -->
+                        <div class="bg-rose-50 border-l-4 border-rose-500 p-4 rounded-r-lg my-4">
+                            <p class="italic text-slate-800 text-xs md:text-sm leading-relaxed" id="quote-woman-display">
+                                «នៅពេលដែលស្ត្រីត្រូវបានផ្តល់សិទ្ធិអំណាច និងមានតួនាទីសម្រេចចិត្តនៅក្នុងផែនការអភិវឌ្ឍន៍ឃុំ-សង្កាត់ យើងឃើញថាបញ្ហាអាហារូបត្ថម្ភ សុខភាពមាតា និងកុមារ និងបញ្ហាសហគមន៍ជាច្រើនត្រូវបានដោះស្រាយកាន់តែមានប្រសិទ្ធភាពខ្ពស់។»
+                            </p>
+                            <div class="mt-2 text-xs font-bold text-slate-600 text-right">— ប្រធានការិយាល័យកិច្ចការនារី និងតំណាងស្ត្រី ខេត្តត្បូងឃ្មុំ</div>
+                        </div>
+                    </div>
+
+                    <!-- SVG Stock Image Placeholder (Gender/Empowerment) -->
+                    <div class="border border-slate-200 rounded-lg overflow-hidden bg-slate-50 p-3 mt-auto">
+                        <div class="text-[10px] text-slate-500 text-center mb-1.5 font-semibold">រូបភាពទី២៖ ស្ត្រីជាមេភូមិ និងតំណាងសហគមន៍ចូលរួមចែករំលែកមតិក្នុងសិក្ខាសាលា</div>
+                        <div class="mx-auto max-w-sm">
+                            <svg viewBox="0 0 400 130" class="w-full h-auto bg-amber-50 rounded border border-amber-100 shadow-inner">
+                                <rect width="100%" height="100%" fill="#fffbf0"/>
+                                <!-- Empowerment Illustration -->
+                                <g transform="translate(140, 10)">
+                                    <!-- Board -->
+                                    <rect x="0" y="10" width="120" height="70" fill="#334155" rx="5" />
+                                    <line x1="15" y1="35" x2="105" y2="35" stroke="#ffffff" stroke-width="2"/>
+                                    <line x1="15" y1="50" x2="75" y2="50" stroke="#f59e0b" stroke-width="2"/>
+                                    <text x="60" y="27" font-family="sans-serif" font-size="10" fill="#ffffff" text-anchor="middle">Women in Leadership</text>
+                                    
+                                    <!-- Presenter (Woman) -->
+                                    <circle cx="-15" cy="55" r="11" fill="#ec4899"/>
+                                    <path d="M -30,85 C -30,70 -5,70 -5,85 Z" fill="#db2777"/>
+                                    <line x1="-15" y1="65" x2="5" y2="45" stroke="#f43f5e" stroke-width="2"/>
+                                    
+                                    <!-- Listener 1 (Man) -->
+                                    <circle cx="145" cy="65" r="9" fill="#3b82f6"/>
+                                    <path d="M 135,85 C 135,74 155,74 155,85 Z" fill="#1d4ed8"/>
+                                </g>
+                                <text x="200" y="115" font-family="'Kantumruy Pro', sans-serif" font-size="11" font-weight="bold" fill="#78350f" text-anchor="middle">ការលើកកម្ពស់តួនាទីយេនឌ័រថ្នាក់ក្រោមជាតិ</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==================== PAGE 4: PUBLIC SERVICES & BASIC INFRASTRUCTURE ==================== -->
+                <div class="preview-page flex flex-col justify-between" id="page-infrastructure">
+                    <div>
+                        <!-- Header line -->
+                        <div class="flex justify-between items-center border-b pb-3 mb-6">
+                            <span class="text-xs text-slate-500 font-semibold uppercase">ផ្នែកទី៣៖ ហេដ្ឋារចនាសម្ព័ន្ធ និងសេវាសាធារណៈ</span>
+                            <span class="text-xs text-blue-800 font-bold">ទំព័រទី ៤</span>
+                        </div>
+
+                        <div class="border-l-4 border-emerald-500 pl-4 mb-4">
+                            <h2 class="khmer-moul text-lg text-blue-950">៣. មណ្ឌលសុខភាព និងហេដ្ឋារចនាសម្ព័ន្ធទ្រទ្រង់ជីវភាព</h2>
+                        </div>
+
+                        <!-- Data narrative -->
+                        <div class="text-slate-700 text-sm leading-relaxed mb-6 space-y-4">
+                            <p class="text-justify">
+                                គុណភាពនៃជីវិតប្រចាំថ្ងៃរបស់ប្រជាពលរដ្ឋ ត្រូវបានកំណត់ដោយការទទួលបានសេវាសុខាភិបាលជាមូលដ្ឋានប្រកបដោយសមធម៌ និងគុណភាព។ យោងតាមទិន្នន័យភូមិ-ឃុំ ក្នុងខេត្តត្បូងឃ្មុំមាន **មណ្ឌលសុខភាពសរុបចំនួន ៧៤ កន្លែង**។ ការចែកចាយមណ្ឌលសុខភាពទៅតាមក្រុង-ស្រុកនីមួយៗ មានកម្រិតសមាមាត្រទៅនឹងចំនួនដង់ស៊ីតេគ្រួសាររស់នៅ ដូចដែលបានបង្ហាញនៅក្នុងតារាងស្ថិតិលម្អិតខាងក្រោម៖
+                            </p>
+                        </div>
+
+                        <!-- Data Table with actual values -->
+                        <div class="overflow-x-auto border border-slate-200 rounded-xl mb-6 shadow-sm">
+                            <table class="w-full text-xs md:text-sm text-left text-slate-600">
+                                <thead class="bg-slate-100 text-slate-800 font-bold border-b border-slate-200">
+                                    <tr>
+                                        <th class="px-4 py-3">ស្រុក/ក្រុង</th>
+                                        <th class="px-4 py-3 text-center">ចំនួនគ្រួសារសរុប</th>
+                                        <th class="px-4 py-3 text-center">ស្ត្រីជាមេគ្រួសារ</th>
+                                        <th class="px-4 py-3 text-center">មណ្ឌលសុខភាព</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-200" id="table-body-districts">
+                                    <!-- Dynamic Rows Loaded by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Strategic Action Points -->
+                        <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-5">
+                            <h4 class="font-bold text-emerald-900 mb-3 flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                                ផែនការយុទ្ធសាស្ត្រ និងទិសដៅអនុវត្តបន្ត៖
+                            </h4>
+                            <ul class="space-y-2 text-xs md:text-sm text-slate-700 list-disc list-inside">
+                                <li><strong>ពង្រឹងសេវាសុខាភិបាល៖</strong> បង្កើន និងកសាងការស្នាក់នៅរបស់ឆ្មប និងគ្រូពេទ្យនៅតាមមណ្ឌលសុខភាពដាច់ស្រយាលក្នុងស្រុកតំបែរ និងស្រុកមេមត់។</li>
+                                <li><strong>ការអភិវឌ្ឍសមភាព៖</strong> បង្កើនថវិកាបដិភាគសម្រាប់គាំទ្រស្ត្រីជាមេគ្រួសារក្រីក្រ តាមរយៈគម្រោងមូលនិធិឃុំ-សង្កាត់ និងមូលនិធិសមធម៌សុខាភិបាល។</li>
+                                <li><strong>គណនេយ្យភាព៖</strong> បង្កើនការត្រួតពិនិត្យ និងវាយតម្លៃផែនការអភិវឌ្ឍន៍រយៈពេល៥ឆ្នាំ ដោយមានការចូលរួមពេញលេញពីអ្នកពាក់ព័ន្ធគ្រប់កម្រិត។</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Page Footer / Signoff block -->
+                    <div class="border-t border-slate-200 pt-4 flex justify-between items-center text-xs text-slate-500 mt-auto">
+                        <span>សៀវភៅផែនការយុទ្ធសាស្ត្រខេត្តត្បូងឃ្មុំឆ្នាំ២០២៤</span>
+                        <span>- ចប់របាយការណ៍ -</span>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 py-6 border-t border-slate-800 text-center text-xs class no-print">
+        <div class="container mx-auto px-4 space-y-2">
+            <p>© ២០២៦ រក្សាសិទ្ធិគ្រប់យ៉ាងដោយ រដ្ឋបាលខេត្តត្បូងឃ្មុំ - គាំទ្រការអភិវឌ្ឍន៍បច្ចេកវិទ្យាដោយ ស្មាតឃុំ</p>
+            <p class="text-slate-500">ប្រព័ន្ធនេះត្រូវបានបង្កើតឡើងសម្រាប់សម្រួលដល់ការងារផែនការឃុំ-សង្កាត់ និងដំណើរការបានយ៉ាងរលូនលើគ្រប់កម្មវិធីរុករក (Browsers)។</p>
+        </div>
+    </footer>
+
+    <!-- Javascript - Logic & Charts with strict cleanup controls -->
+    <script>
+        // 1. Core data extracted from provided indicators and table files
+        const districtData = {
+            "តំបែរ": { families: 21960, female: 46968, male: 45196, totalPop: 92164, femaleHeaded: 2839, healthCenters: 7 },
+            "ក្រូចឆ្មារ": { families: 25170, female: 51691, male: 53457, totalPop: 105148, femaleHeaded: 4264, healthCenters: 12 },
+            "មេមត់": { families: 38623, female: 82187, male: 79896, totalPop: 162083, femaleHeaded: 4685, healthCenters: 15 },
+            "អូររាំងឪ": { families: 22716, female: 53469, male: 50194, totalPop: 103663, femaleHeaded: 3695, healthCenters: 9 },
+            "ពញាក្រែក": { families: 39167, female: 80503, male: 80537, totalPop: 161040, femaleHeaded: 5842, healthCenters: 11 },
+            "សួង": { families: 9430, female: 20571, male: 20146, totalPop: 40717, femaleHeaded: 1376, healthCenters: 3 },
+            "ត្បូងឃ្មុំ": { families: 49189, female: 104583, male: 100689, totalPop: 205272, femaleHeaded: 7507, healthCenters: 17 }
+        };
+
+        const provinceTotal = {
+            families: 206255,
+            female: 439972,
+            male: 430115,
+            totalPop: 870087,
+            femaleHeaded: 30208,
+            healthCenters: 74
+        };
+
+        // Track active chart instances to prevent overlapping charts (The Clean-up Logic)
+        let currentDemoChart = null;
+        let currentGenderChart = null;
+
+        // Initialize App
+        window.addEventListener('DOMContentLoaded', () => {
+            renderTable();
+            updateDistrictFocus();
+            syncQuotes();
+        });
+
+        // Render Table Data inside Document Section 3
+        function renderTable() {
+            const tbody = document.getElementById('table-body-districts');
+            tbody.innerHTML = '';
+            
+            Object.keys(districtData).forEach(name => {
+                const d = districtData[name];
+                const row = document.createElement('tr');
+                row.className = "hover:bg-slate-50 transition duration-150";
+                row.innerHTML = `
+                    <td class="px-4 py-3 font-semibold text-slate-800">ស្រុក${name === 'សួង' ? 'ក្រុង' : ''}${name}</td>
+                    <td class="px-4 py-3 text-center font-mono">${d.families.toLocaleString()}</td>
+                    <td class="px-4 py-3 text-center font-mono text-rose-700">${d.femaleHeaded.toLocaleString()} (${((d.femaleHeaded / d.families) * 100).toFixed(1)}%)</td>
+                    <td class="px-4 py-3 text-center font-mono text-emerald-700">${d.healthCenters}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // Summary province row
+            const totalRow = document.createElement('tr');
+            totalRow.className = "bg-slate-100 font-bold text-slate-900 border-t-2 border-slate-300";
+            totalRow.innerHTML = `
+                <td class="px-4 py-3">សរុបខេត្តត្បូងឃ្មុំ</td>
+                <td class="px-4 py-3 text-center font-mono">${provinceTotal.families.toLocaleString()}</td>
+                <td class="px-4 py-3 text-center font-mono text-rose-700">${provinceTotal.femaleHeaded.toLocaleString()} (${((provinceTotal.femaleHeaded / provinceTotal.families) * 100).toFixed(1)}%)</td>
+                <td class="px-4 py-3 text-center font-mono text-emerald-700">${provinceTotal.healthCenters}</td>
+            `;
+            tbody.appendChild(totalRow);
+        }
+
+        // Live Quotes Synchronization
+        function syncQuotes() {
+            const govQuote = document.getElementById('quote-governor').value;
+            const womanQuote = document.getElementById('quote-woman').value;
+
+            document.getElementById('quote-gov-display').innerText = govQuote;
+            document.getElementById('quote-woman-display').innerText = womanQuote;
+        }
+
+        // Dynamic update & Strict Chart cleanup execution
+        function updateDistrictFocus() {
+            const selected = document.getElementById('district-selector').value;
+            
+            // Adjust statistics based on selection
+            if (selected === 'all') {
+                document.getElementById('txt-total-pop').innerText = provinceTotal.totalPop.toLocaleString();
+                document.getElementById('txt-total-families').innerText = provinceTotal.families.toLocaleString();
+                document.getElementById('txt-total-female').innerText = provinceTotal.female.toLocaleString();
+                document.getElementById('txt-total-male').innerText = provinceTotal.male.toLocaleString();
+                document.getElementById('txt-total-female-headed').innerText = provinceTotal.femaleHeaded.toLocaleString();
+            } else {
+                const d = districtData[selected];
+                document.getElementById('txt-total-pop').innerText = d.totalPop.toLocaleString();
+                document.getElementById('txt-total-families').innerText = d.families.toLocaleString();
+                document.getElementById('txt-total-female').innerText = d.female.toLocaleString();
+                document.getElementById('txt-total-male').innerText = d.male.toLocaleString();
+                document.getElementById('txt-total-female-headed').innerText = d.femaleHeaded.toLocaleString();
+            }
+
+            // === CRITICAL CLEAN-UP LOGIC: PREVENTING OVERLAPS IN CHART.JS ===
+            if (currentDemoChart) {
+                currentDemoChart.destroy();
+                currentDemoChart = null;
+            }
+            if (currentGenderChart) {
+                currentGenderChart.destroy();
+                currentGenderChart = null;
+            }
+
+            // A. Demographics Bar Chart
+            const ctxDemo = document.getElementById('chart-demographics').getContext('2d');
+            const labels = Object.keys(districtData).map(name => `ស្រុក${name === 'សួង' ? 'ក្រុង' : ''}${name}`);
+            const popData = Object.keys(districtData).map(name => districtData[name].totalPop);
+            
+            const demoBgColors = Object.keys(districtData).map(name => {
+                return (selected !== 'all' && name === selected) ? '#f59e0b' : '#1e3a8a';
+            });
+
+            currentDemoChart = new Chart(ctxDemo, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'ប្រជាជនសរុប (នាក់)',
+                        data: popData,
+                        backgroundColor: demoBgColors,
+                        borderRadius: 5,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { font: { family: 'Kantumruy Pro', size: 10 } } },
+                        x: { ticks: { font: { family: 'Kantumruy Pro', size: 10 } } }
+                    }
+                }
+            });
+
+            // B. Gender/Women Head of Household Comparison Line Chart
+            const ctxGender = document.getElementById('chart-gender').getContext('2d');
+            const familiesData = Object.keys(districtData).map(name => districtData[name].families);
+            const femaleHeadedData = Object.keys(districtData).map(name => districtData[name].femaleHeaded);
+
+            currentGenderChart = new Chart(ctxGender, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'គ្រួសារសរុប',
+                            data: familiesData,
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            fill: true,
+                            tension: 0.3
+                        },
+                        {
+                            label: 'ស្រ្តីជាមេគ្រួសារ',
+                            data: femaleHeadedData,
+                            borderColor: '#ec4899',
+                            backgroundColor: 'rgba(236, 72, 153, 0.1)',
+                            fill: true,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { 
+                            position: 'top',
+                            labels: { font: { family: 'Kantumruy Pro', size: 10 } } 
+                        } 
+                    },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { font: { family: 'Kantumruy Pro', size: 10 } } },
+                        x: { ticks: { font: { family: 'Kantumruy Pro', size: 10 } } }
+                    }
+                }
+            });
+        }
+
+        // Professional Word Document Export Generator with formatting
+        function exportToWord() {
+            const selected = document.getElementById('district-selector').value;
+            const focusTitle = selected === 'all' ? 'ខេត្តត្បូងឃ្មុំទាំងមូល' : `ស្រុក${selected}`;
+            const govQuote = document.getElementById('quote-governor').value;
+            const womanQuote = document.getElementById('quote-woman').value;
+
+            // Generate detailed table markup for Word output
+            let tableRowsHtml = '';
+            Object.keys(districtData).forEach(name => {
+                const d = districtData[name];
+                tableRowsHtml += `
+                    <tr style="border-bottom: 1px solid #cccccc;">
+                        <td style="padding: 8px; text-align: left; font-family: 'Khmer OS Battambang';">ស្រុក${name === 'សួង' ? 'ក្រុង' : ''}${name}</td>
+                        <td style="padding: 8px; text-align: center; font-family: 'Khmer OS Battambang';">${d.families.toLocaleString()}</td>
+                        <td style="padding: 8px; text-align: center; font-family: 'Khmer OS Battambang'; color: #b91c1c;">${d.femaleHeaded.toLocaleString()} (${((d.femaleHeaded / d.families) * 100).toFixed(1)}%)</td>
+                        <td style="padding: 8px; text-align: center; font-family: 'Khmer OS Battambang'; color: #047857;">${d.healthCenters}</td>
+                    </tr>
+                `;
+            });
+
+            const docContent = `
+                <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+                <head>
+                    <title>ផែនការយុទ្ធសាស្ត្រអភិវឌ្ឍន៍ឃុំ-សង្កាត់ ខេត្តត្បូងឃ្មុំ</title>
+                    <style>
+                        @page {
+                            size: A4;
+                            margin: 2.54cm 2.54cm 2.54cm 2.54cm;
+                        }
+                        body {
+                            font-family: 'Khmer OS Battambang', 'Khmer OS', Arial, sans-serif;
+                            line-height: 1.6;
+                            color: #1e293b;
+                        }
+                        .moul {
+                            font-family: 'Khmer OS Muol Light', 'Khmer OS Muol', sans-serif;
+                            font-weight: bold;
+                        }
+                        .page-break {
+                            page-break-before: always;
+                            clear: both;
+                        }
+                        .text-center { text-align: center; }
+                        .text-right { text-align: right; }
+                        .text-justify { text-align: justify; }
+                        
+                        /* Structure & Design Components */
+                        .cover-page {
+                            padding-top: 120px;
+                            padding-bottom: 80px;
+                            text-align: center;
+                        }
+                        .quote-card {
+                            background-color: #fef3c7;
+                            border-left: 5px solid #d97706;
+                            padding: 15px;
+                            margin: 20px 0;
+                            font-style: italic;
+                        }
+                        .quote-card-rose {
+                            background-color: #fff1f2;
+                            border-left: 5px solid #f43f5e;
+                            padding: 15px;
+                            margin: 20px 0;
+                            font-style: italic;
+                        }
+                        .table-style {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin: 20px 0;
+                        }
+                        .table-style th {
+                            background-color: #1e3a8a;
+                            color: #ffffff;
+                            padding: 10px;
+                            font-family: 'Khmer OS Muol Light';
+                            font-size: 11px;
+                        }
+                        .section-indicator {
+                            border-left: 4px solid #1e3a8a;
+                            padding-left: 12px;
+                            margin-top: 35px;
+                            margin-bottom: 15px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    
+                    <!-- PAGE 1: COVER -->
+                    <div class="cover-page">
+                        <p class="moul" style="font-size: 18px; margin-bottom: 5px;">ព្រះរាជាណាចក្រកម្ពុជា</p>
+                        <p class="moul" style="font-size: 14px; margin-bottom: 30px;">ជាតិ សាសនា ព្រះមហាក្សត្រ</p>
+                        <p style="font-size: 13px; margin-bottom: 120px; font-weight: bold;">រដ្ឋបាលខេត្តត្បូងឃ្មុំ</p>
+                        
+                        <p class="moul" style="font-size: 20px; color: #1e3a8a; margin-bottom: 10px;">សៀវភៅរបាយការណ៍យុទ្ធសាស្ត្រ</p>
+                        <p class="moul" style="font-size: 24px; color: #d97706; margin-bottom: 20px;">ផែនការយុទ្ធសាស្ត្រអភិវឌ្ឍន៍ឃុំ-សង្កាត់</p>
+                        <p style="font-size: 16px; font-weight: bold; margin-bottom: 150px;">ខេត្តត្បូងឃ្មុំ ឆ្នាំ២០២៤</p>
+                        
+                        <div style="border-top: 2px solid #d97706; width: 40%; margin: 0 auto 20px auto;"></div>
+                        
+                        <p style="font-size: 12px; font-weight: bold;">រៀបចំ និងចងក្រងដោយ៖ ក្រុមការងារគាំទ្របច្ចេកទេស និងផែនការថ្នាក់ខេត្ត</p>
+                        <p style="font-size: 11px; color: #64748b;">បោះពុម្ពផ្សាយ៖ ឆ្នាំ២០២៦ (ផ្អែកលើស្ថិតិប្រមូលផ្តុំសូចនាករភូមិ-ឃុំ ឆ្នាំ២០២៤)</p>
+                    </div>
+
+                    <!-- PAGE 2: DEMOGRAPHICS -->
+                    <div class="page-break"></div>
+                    <div class="section-indicator">
+                        <p style="font-size: 11px; color: #64748b; margin: 0; text-transform: uppercase;">ផ្នែកទី១៖ វិភាគទិន្នន័យប្រជាសាស្ត្រសរុប</p>
+                        <h2 class="moul" style="font-size: 16px; color: #1e3a8a; margin: 5px 0 0 0;">១. លក្ខណៈរួមអំពីចំនួនប្រជាសាស្ត្រ និងគ្រួសារសរុប</h2>
+                    </div>
+
+                    <p class="text-justify" style="font-size: 14px; text-indent: 40px;">
+                        យោងតាមការប្រមូលទិន្នន័យសរុបក្នុងភូមិដែលដកស្រង់ចេញពីសៀវភៅគ្រួសារឆ្នាំ២០២៤ ខេត្តត្បូងឃ្មុំមានចំនួនប្រជាជនរស់នៅសរុបចំនួន <strong>${provinceTotal.totalPop.toLocaleString()} នាក់</strong> ស្មើនឹង <strong>${provinceTotal.families.toLocaleString()} គ្រួសារ</strong>។ ក្នុងនោះមានប្រជាជនស្រីសរុប <strong>${provinceTotal.female.toLocaleString()} នាក់</strong> និងប្រុស <strong>${provinceTotal.male.toLocaleString()} នាក់</strong>។
+                    </p>
+                    <p class="text-justify" style="font-size: 14px; text-indent: 40px;">
+                        ការវិភាគលម្អិតបានបង្ហាញថា ដង់ស៊ីតេប្រជាជនមានការប្រែប្រួលខ្លាំងរវាងតំបន់ជនបទកសិកម្ម និងទីប្រជុំជនក្រុង។ យុទ្ធសាស្ត្ររបស់រដ្ឋបាលខេត្តគឺតម្រង់ទិសថវិកាអភិវឌ្ឍន៍របស់រាជរដ្ឋាភិបាលឱ្យចំគោលដៅនៃតម្រូវការជាក់ស្តែងរបស់សហគមន៍។
+                    </p>
+
+                    <div class="quote-card">
+                        <p style="font-size: 12px; margin: 0;">«${govQuote}»</p>
+                        <p class="text-right" style="font-size: 11px; font-weight: bold; margin: 5px 0 0 0;">— តំណាងគណៈអភិបាលរដ្ឋបាលមូលដ្ឋាន ខេត្តត្បូងឃ្មុំ</p>
+                    </div>
+
+                    <!-- PAGE 3: GENDER ANALYSIS -->
+                    <div class="page-break"></div>
+                    <div class="section-indicator">
+                        <p style="font-size: 11px; color: #64748b; margin: 0; text-transform: uppercase;">ផ្នែកទី២៖ សមភាពយេនឌ័រ និងស្ត្រីជាមេគ្រួសារ</p>
+                        <h2 class="moul" style="font-size: 16px; color: #1e3a8a; margin: 5px 0 0 0;">២. ការវិភាគលើសមភាពយេនឌ័រ និងគ្រួសារមានស្ត្រីជាមេដឹកនាំ</h2>
+                    </div>
+
+                    <p class="text-justify" style="font-size: 14px; text-indent: 40px;">
+                        នៅក្នុងខេត្តត្បូងឃ្មុំទាំងមូល ចំនួនគ្រួសារដែលមានស្ត្រីជាមេគ្រួសារមានចំនួនរហូតដល់ប្រមាណ <strong>${provinceTotal.femaleHeaded.toLocaleString()} គ្រួសារ</strong> (ស្មើនឹងប្រមាណ ១៤.៦% នៃគ្រួសារសរុប)។ នេះបញ្ជាក់យ៉ាងច្បាស់ថា ស្ត្រីដើរតួនាទីជាកម្លាំងចលករដ៏ចម្បងក្នុងការទ្រទ្រង់ជីវភាពគ្រួសារ និងសហគមន៍។
+                    </p>
+                    <p class="text-justify" style="font-size: 14px; text-indent: 40px;">
+                        គម្រោងផែនការយុទ្ធសាស្ត្រថ្មីនេះនឹងផ្តល់អាទិភាពខ្ពស់ដល់ស្ត្រីក្នុងការទទួលបានឱកាសការងារ ការបណ្តុះបណ្តាលវិជ្ជាជីវៈ និងការគាំពារសុខភាពមាតា-ទារក។
+                    </p>
+
+                    <div class="quote-card-rose">
+                        <p style="font-size: 12px; margin: 0;">«${womanQuote}»</p>
+                        <p class="text-right" style="font-size: 11px; font-weight: bold; margin: 5px 0 0 0;">— ប្រធានការិយាល័យកិច្ចការនារី និងតំណាងស្ត្រី ខេត្តត្បូងឃ្មុំ</p>
+                    </div>
+
+                    <!-- PAGE 4: PUBLIC SERVICES -->
+                    <div class="page-break"></div>
+                    <div class="section-indicator">
+                        <p style="font-size: 11px; color: #64748b; margin: 0; text-transform: uppercase;">ផ្នែកទី៣៖ ហេដ្ឋារចនាសម្ព័ន្ធ និងសេវាសាធារណៈ</p>
+                        <h2 class="moul" style="font-size: 16px; color: #1e3a8a; margin: 5px 0 0 0;">៣. មណ្ឌលសុខភាព និងហេដ្ឋារចនាសម្ព័ន្ធទ្រទ្រង់ជីវភាព</h2>
+                    </div>
+
+                    <p style="font-size: 14px; margin-bottom: 10px;">
+                        តារាងខាងក្រោមបង្ហាញពីការបែងចែកស្ថិតិគ្រួសារ ស្ត្រីជាមេគ្រួសារ និងចំនួនមណ្ឌលសុខភាពតាមក្រុង-ស្រុក៖
+                    </p>
+
+                    <table class="table-style" border="1" style="border-collapse: collapse; border: 1px solid #cccccc; width:100%;">
+                        <thead>
+                            <tr style="background-color: #1e3a8a; color: #ffffff;">
+                                <th style="padding: 8px;">ស្រុក/ក្រុង</th>
+                                <th style="padding: 8px;">ចំនួនគ្រួសារសរុប</th>
+                                <th style="padding: 8px;">ស្ត្រីជាមេគ្រួសារ</th>
+                                <th style="padding: 8px;">មណ្ឌលសុខភាព</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tableRowsHtml}
+                        </tbody>
+                    </table>
+
+                    <p class="moul" style="font-size: 13px; margin-top: 25px; margin-bottom: 5px;">ទិសដៅយុទ្ធសាស្ត្រ និងផែនការបន្ត៖</p>
+                    <ul style="font-size: 13px; padding-left: 20px;">
+                        <li>ពង្រីក និងកសាងការស្នាក់នៅរបស់ឆ្មប និងគ្រូពេទ្យនៅតាមមណ្ឌលសុខភាពដាច់ស្រយាល។</li>
+                        <li>បង្កើនថវិកាបដិភាគសម្រាប់គាំទ្រស្ត្រីជាមេគ្រួសារក្រីក្រ តាមរយៈគម្រោងមូលនិធិឃុំ-សង្កាត់។</li>
+                    </ul>
+                </body>
+                </html>
+            `;
+
+            // Deliver binary blob download
+            const blob = new Blob(['\ufeff' + docContent], { type: 'application/msword' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ផែនការយុទ្ធសាស្ត្រអភិវឌ្ឍន៍ឃុំសង្កាត់_ខេត្តត្បូងឃ្មុំ_${selected}.doc`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
